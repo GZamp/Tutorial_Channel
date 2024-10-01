@@ -1,0 +1,134 @@
+!-----------------------------------------------------------------------
+!
+!     user subroutines required by nek5000
+!
+!     Parameters used by this set of subroutines:
+!-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'NEKUSE'          ! UDIFF, UTRANS
+
+      UDIFF =0.0
+      UTRANS=0.0
+
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,ieg)
+      
+      include 'SIZE'
+      include 'NEKUSE'          ! FF[XYZ]
+
+      integer ix,iy,iz,ieg
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'NEKUSE'          ! QVOL
+
+      QVOL   = 0.0
+
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine userchk
+      implicit none
+      include 'SIZE'            !
+      include 'TSTEP'           ! ISTEP, lastep, time
+      include 'INPUT'           ! IF3D, PARAM
+      
+!     start framework
+      if (ISTEP.eq.0) call frame_start
+
+!     monitor simulation
+      call frame_monitor
+
+!     post processing step
+      call pstat2d_main()
+      
+!     finish simulation
+      LASTEP=1
+
+!     finalise framework
+      if (ISTEP.eq.NSTEPS.or.LASTEP.eq.1) then
+         call frame_end
+      endif
+      
+      call exitt0
+     
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,eg)
+      include 'SIZE'
+      include 'NEKUSE'          ! UX, UY, UZ, TEMP, X, Y
+
+!     velocity
+      ux =  0.0
+      uy =  0.0
+      uz =  0.0
+
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'NEKUSE'          ! UX, UY, UZ, TEMP, Z
+
+!     argument list
+!      integer ix,iy,iz,ieg
+
+      ux = 0.
+      uy = 0.
+      uz = 0.
+
+      return
+      end
+!-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
+      subroutine usrdat
+      include 'SIZE'
+
+      integer,parameter :: seed = 42
+      call srand(seed)
+
+      return
+      end
+!-----------------------------------------------------------------------
+       subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+
+
+      do iel=1,nelv
+      do ifc=1,2*ndim
+          id_face = bc(5,ifc,iel,1)
+          if (id_face.eq.3) then
+             cbc(ifc,iel,1) = 'W  '
+          endif
+      enddo
+      enddo
+      
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine usrdat3
+      include 'SIZE'
+      include 'INPUT'           ! param, if3d
+      include 'MASS'            ! volvm1      
+      
+      param(54) = -1  ! use >0 for const flowrate or <0 bulk vel
+                      ! flow direction is given by (1=x, 2=y, 3=z) 
+      param(55) = 1.0 ! flowrate/bulk-velocity 
+
+      return
+      end
+c-----------------------------------------------------------------------
+
